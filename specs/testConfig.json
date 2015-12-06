@@ -1,0 +1,14 @@
+{
+  "name": "lambdabox-test",
+  "s3Bucket": "lambdabox.testbucket",
+
+  "files": [
+    {
+      "path": "specs/testBinaryOne.sh",
+      "executable": true
+    },
+    "specs/testBinaryTwo.sh"
+  ]
+
+
+}
