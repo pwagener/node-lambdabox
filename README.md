@@ -16,40 +16,62 @@ npm install lambdabox
 
 ## What Is This Good For?
 
-An AWS Lambda must be less than 50 MB.  If your Lambda includes big fat files,
-that might be tough to meet.  A Lambdabox is a set of files stored in S3 that
-can be used by your Lambda.  This project includes tools to make it easy to
-store files in S3 and then attach them to your Lambda at runtime.
+If your AWS Lambda uses ...
 
-Here are the broad steps:
+* Large data files that would exceed the 50 MB limit
+* Binaries that must be compiled for AWS Linux
+* (Not Yet, But Soon) Native node modules that you must rebuild for AWS Linux
 
-1.  Create the `lambdabox.json` configuration file in your project's root directory.
-2.  Deploy you Lambdabox to S3 with the included CLI or by modifying your build
-process
-3.  Modify your Lambda's entry module to attach the Lambdabox at runtime
-outside of your `handler` function.
+... then this project might help.
 
+A Lambdabox is a set of files stored in S3 that can easily be used by your
+Lambda.  This project includes tools to make it easy to store files in S3 and
+then attach them to the EC2 instance that is executing your Lambda at runtime.
 
+Here are the basic steps:
 
-## The lambdabox.json Configuration File
-This file describes what your box will contain.  One simple example:
+1.  Create a `lambdabox.json` configuration file in your project's root directory
+2.  Deploy you Lambdabox to S3 with the included CLI or by modifying your build process
+3.  Attach your Lambda box via your Lambda's entry module
+
+## Seriously?
+
+Yeah, seriously.  A Lambda [is guaranteed 512 MB of storage](http://docs.aws.amazon.com/lambda/latest/dg/limits.html)
+in `/tmp` that it can use however it sees fit.  Copying files from S3 into the running instance takes a few hundred
+milliseconds.  For certain types of Lambdas workloads, this is a small price to pay to get around the 50 MB
+deployment limit.
+
+Even better news:  Amazon [tells us the Lambda container
+lifecycle](https://aws.amazon.com/blogs/compute/container-reuse-in-lambda/) will
+ensure that when a container is reused, anything in `/tmp` will still be there.
+Our recommended Lambdabox attach pattern (see #3 below) takes advantage of this.
+If your Lambda is in "regular use", then you'll only pay the S3 copy price once.
+
+## Step #1: The lambdabox.json Configuration File
+This describes what your Lambdabox will contain.  One simple example:
 
 ```json
 {
   "name": "my-lambdabox",
-  "bucket": "my.s3.bucket.lambdabox",
-  "binaries": [
-    { "path": "bin/aws-linux/phantomjs" }
+  "s3Bucket": "my.s3.bucket.lambdabox",
+  "files": [
+    "data/someBigFile.csv",
+    { "path": "bin/aws-linux/phantomjs", "executable": true }
   ]
 }
 ```
 
+You can provide the list of files either as direct strings or as objects
+with a `path` property.  You also can specify `executable` if you expect the
+file to be executable when it is copied over.
+
 Storing binaries in a Lambdabox is a typical use case:  the binaries have to
 be compiled for AWS Linux, making them typically not useful for local testing
 but imperative for leveraging in a deployed Lambda.  When deployed, this
-configuration would take the file at `bin/aws-linux/phantomjs` and upload it
-to the S3 bucket named `my.s3.bucket.lambdabox` using the locally-available
-AWS credentials.
+configuration would take the files at `bin/aws-linux/phantomjs` and
+`data/someBigFile.csv` and upload them to the S3 bucket named
+`my.s3.bucket.lambdabox` using the locally-available AWS credentials.
+
 
 ## Deploying Your Lambdabox
 
@@ -114,9 +136,15 @@ var attachPromise = lambdabox.attach();
 module.exports.handler = function(event, context) {
     attachPromise.then(function() {
         console.log('/tmp/bin/aws-linux/phantomjs should now exist and be executable');
+        context.done();
     }).catch(function(err) {
         context.done(err);
     });
 };
 
 ```
+
+The `lambdabox.attach()` method returns a Promise that resolves when the
+Lambdabox has been completely copied to the instance.  Since the Node
+initialization code only runs once per instance, we're guaranteed to have the
+files we need in `/tmp`.
