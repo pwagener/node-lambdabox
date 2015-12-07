@@ -73,7 +73,7 @@ configuration would take the files at `bin/aws-linux/phantomjs` and
 `my.s3.bucket.lambdabox` using the locally-available AWS credentials.
 
 
-## Deploying Your Lambdabox
+## Step #2: Deploying Your Lambdabox
 
 Deploying your Lambdabox means copying everything up to the specified S3 bucket
 where it can be used by a running AWS Lambda function.  There are several ways
@@ -123,7 +123,7 @@ gulp.task('lambdaDeploy', function () {
 ```
 
 
-## Modifying Your Lambda's Entry Module
+## Step #3: Modifying Your Lambda's Entry Module
 
 Finally, you have to modify how your Lambda runs to "attach" the Lambdabox at runtime.  This should
 be done outside of your _handler()_ method, it only runs once per instance.
