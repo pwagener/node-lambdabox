@@ -6,7 +6,7 @@ you have two choices:
 1.  Put it on a diet
 2.  Put some of it in a Lambdabox
 
-Let's face it: no one likes a diet; so on to #2.
+No one likes a diet; so let's talk about #2.
 
 ## Installation
 
@@ -18,9 +18,9 @@ npm install lambdabox
 
 If your AWS Lambda uses ...
 
-* Large data files that would exceed the 50 MB limit
+* Data files that would exceed the 50 MB limit
 * Binaries that must be compiled for AWS Linux
-* (Not Yet, But Soon) Native node modules that you must rebuild for AWS Linux
+
 
 ... then this project might help.
 
@@ -32,13 +32,13 @@ Here are the basic steps:
 
 1.  Create a `lambdabox.json` configuration file in your project's root directory
 2.  Deploy you Lambdabox to S3 with the included CLI or by modifying your build process
-3.  Attach your Lambda box via your Lambda's entry module
+3.  Attach your Lambdabox via your Lambda's entry module
 
 ## Seriously?
 
 Yeah, seriously.  A Lambda [is guaranteed 512 MB of storage](http://docs.aws.amazon.com/lambda/latest/dg/limits.html)
 in `/tmp` that it can use however it sees fit.  Copying files from S3 into the running instance takes a few hundred
-milliseconds.  For certain types of Lambdas workloads, this is a small price to pay to get around the 50 MB
+milliseconds.  For certain types of workloads, this is a small price to pay to get around the 50 MB
 deployment limit.
 
 Even better news:  Amazon [tells us the Lambda container
@@ -56,21 +56,20 @@ This describes what your Lambdabox will contain.  One simple example:
   "s3Bucket": "my.s3.bucket.lambdabox",
   "files": [
     "data/someBigFile.csv",
+    "data/anotherBigFile.csv",
     { "path": "bin/aws-linux/phantomjs", "executable": true }
   ]
 }
 ```
 
-You can provide the list of files either as direct strings or as objects
-with a `path` property.  You also can specify `executable` if you expect the
-file to be executable when it is copied over.
+The lambdabox needs a logical name, the S3 bucket to store the files in, and
+the list of files to be inclued in this lambdabox. The list of files can be
+strings or as objects with a `path` property.  You also can specify `executable`
+as `true` if you need the file to be executable when it is copied over.
 
-Storing binaries in a Lambdabox is a typical use case:  the binaries have to
-be compiled for AWS Linux, making them typically not useful for local testing
-but imperative for leveraging in a deployed Lambda.  When deployed, this
-configuration would take the files at `bin/aws-linux/phantomjs` and
-`data/someBigFile.csv` and upload them to the S3 bucket named
-`my.s3.bucket.lambdabox` using the locally-available AWS credentials.
+When deployed, this lambdabox will upload all the files to the S3 bucket named
+`my.s3.bucket.lambdabox` using the locally-available AWS credentials and the
+relative paths.
 
 
 ## Step #2: Deploying Your Lambdabox
@@ -85,9 +84,11 @@ The `lambdabox` NPM module provides a CLI you can leverage as an NPM script.
 In your `package.json`, reference it like:
 
 ```json
+{
     "scripts": {
         "lambdabox": "lambdabox deploy"
     }
+}
 ```
 
 Then run it:
@@ -126,7 +127,7 @@ gulp.task('lambdaDeploy', function () {
 ## Step #3: Modifying Your Lambda's Entry Module
 
 Finally, you have to modify how your Lambda runs to "attach" the Lambdabox at runtime.  This should
-be done outside of your _handler()_ method, it only runs once per instance.
+be done outside of your _handler(...)_ method so it only runs once per instance.
 
 ```js
 var lambdabox = require('lambdabox');
@@ -147,4 +148,25 @@ module.exports.handler = function(event, context) {
 The `lambdabox.attach()` method returns a Promise that resolves when the
 Lambdabox has been completely copied to the instance.  Since the Node
 initialization code only runs once per instance, we're guaranteed to have the
-files we need in `/tmp`.
+files we need in `/tmp`. The `Promise` returned from `lambdabox.attach()` is
+never rejected.  If the copy fails (for instance, the file does not exist in
+S3), Lambdabox will retry again after a delay.  This is to ensure future calls
+to the _handler(...)_ do not proceed without having the files available.
+
+Also, different Lambda's may not need all files.  You may specify the files
+needed as well:
+
+```
+    // ...
+    var attachPromise = lambdabox.attach([
+        "data/someBigFile.csv",
+        "data/anotherBigFile.csv"
+    ]);
+    }
+```
+This call to `attach(...)` would not copy the PhantomJS executable from the
+configuration file.
+
+# Changelog
+
+See [the ChangeLog](./Changes.md) for details.
