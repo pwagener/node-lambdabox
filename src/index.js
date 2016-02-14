@@ -1,16 +1,16 @@
 'use strict';
 
-var configReader = require('./lib/configReader');
-var deployer = require('./lib/deployer');
-var attacher = require('./lib/attacher');
+import configReader from './configReader';
+import deployer from './deployer';
+import attacher from './attacher';
 
-function deploy(path) {
-    return configReader(path)
+function deploy(options) {
+    return configReader(options)
         .then(deployer);
 }
 
-function attach(path) {
-    return configReader(path)
+function attach(options) {
+    return configReader(options)
             .then(attacher);
 }
 

@@ -1,10 +1,12 @@
 {
   "name": "lambdabox",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Side-loading of dependencies for AWS Lambda",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "test"
+    "test": "mocha --compilers js:babel-register specs/setup.js specs/**/*.spec.js",
+    "coverage": "istanbul cover -x specs/**/*.spec.js -x specs/setup.js _mocha -- --reporter dot --compilers js:babel-register specs/setup.js specs/**/*.spec.js",
+    "babel": "babel src --out-dir dist"
   },
   "repository": {
     "type": "git",
@@ -13,24 +15,43 @@
   "keywords": [
     "aws",
     "lambda",
-    "dependencies",
-    "node_modules"
+    "dependencies"
   ],
   "author": "peter@wagener.org",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/pwagener/node-lambdabox/issues"
   },
   "homepage": "https://github.com/pwagener/node-lambdabox",
-  "bin": {
-    "lambdabox": "./bin/cli.js"
-  },
+  "bin": "dist/cli.js",
+
   "dependencies": {
-    "app-module-path": "^1.0.4",
-    "aws-sdk": "^2.2.19",
-    "bluebird": "^3.0.5",
+    "aws-sdk": "^2.2.33",
+    "bluebird": "^3.3.1",
     "debug": "^2.2.0",
-    "flightplan": "^0.6.7",
-    "mkdirp": "^0.5.1"
+    "find-parent-dir": "^0.3.0",
+    "mkdirp": "^0.5.1",
+    "underscore": "^1.8.3"
+  },
+
+  "devDependencies": {
+    "babel-cli": "^6.5.1",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-register": "^6.5.2",
+    "chai": "^3.5.0",
+    "chai-string": "^1.1.6",
+    "istanbul": "^1.0.0-alpha.2",
+    "mocha": "^2.4.5",
+    "sinon": "^1.17.3",
+    "sinon-chai": "^2.8.0"
+  },
+
+  "babel": {
+    "presets": [
+      "es2015"
+    ],
+    "ignore": [
+      "cli.js"
+    ]
   }
 }
