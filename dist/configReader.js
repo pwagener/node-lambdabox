@@ -70,7 +70,7 @@ function _findConfig(configPath) {
         output('Finding config with explicit path: ' + configPath);
         return _bluebird2.default.resolve(_path2.default.resolve(configPath));
     } else {
-        var startDir = _path2.default.dirname(require.main.filename);
+        var startDir = process.cwd();
         output('Searching for ' + defaultConfigFileName + ' starting at ' + startDir);
         return findParentDir(startDir, defaultConfigFileName).then(function (foundDir) {
             if (foundDir === null) {

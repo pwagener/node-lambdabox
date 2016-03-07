@@ -25,7 +25,7 @@ describe('The deployer module', () => {
     });
 
     describe('when called', () => {
-        var validConfig, verifier, fs, AWSManagedUpload, onSpy, sendSpy;
+        var validConfig, verifier, fs, rawS3, onSpy, sendSpy;
 
         beforeEach(() => {
             verifier = sandbox.stub().returns(Promise.resolve());
@@ -33,20 +33,18 @@ describe('The deployer module', () => {
                 createReadStream: sandbox.spy()
             }
 
-            // Mock out AWSManagedUpload
-            AWSManagedUpload = sandbox.stub();
-            AWSManagedUpload.prototype.on = onSpy = sandbox.spy();
-            AWSManagedUpload.prototype.send = sendSpy = sandbox.stub().callsArgWith(0, null, {});
-            const AWS = {
-                S3: {
-                    ManagedUpload: AWSManagedUpload
-                }
+            // Mock out raw AWS S3 interface
+            onSpy = sandbox.stub();
+            rawS3 = {
+                upload: sandbox.stub().returns({
+                    on: onSpy
+                }).callsArg(1)
             };
 
             inject({
                 fs,
                 verifier: verifier,
-                AWS: AWS,
+                rawS3: rawS3,
                 output: sandbox.spy()
             });
 
@@ -59,20 +57,15 @@ describe('The deployer module', () => {
         });
 
         it('creates two ManagedUpload objects', () => {
-            expect(AWSManagedUpload).to.have.been.calledTwice;
-        });
-
-        it('provides the service to use', () => {
-            expect(getArgs(AWSManagedUpload)[0]).to.have.property('service');
+            expect(rawS3.upload).to.have.been.calledTwice;
         });
 
         it('provides the correct S3 params', () => {
-            var args = getArgs(AWSManagedUpload)[0];
-            expect(args).to.have.property('params');
+            var args = getArgs(rawS3.upload)[0];
 
-            expect(args.params).to.have.property('Bucket', testConfig.s3Bucket);
-            expect(args.params).to.have.property('Key', testConfig.files[0].path);
-            expect(args.params).to.have.property('Bucket', testConfig.s3Bucket);
+            expect(args).to.have.property('Bucket', testConfig.s3Bucket);
+            expect(args).to.have.property('Key', testConfig.files[0].path);
+            expect(args).to.have.property('Bucket', testConfig.s3Bucket);
         });
     });
 

@@ -2,6 +2,10 @@
 
 This project follows semantic versioning.  Each release will document changes here.
 
+## 1.1.1:
+
+- Fixed bug in finding `lambdabox.json` file
+
 ## 1.1.0:
 
 - Ability to specify files to `attach`

@@ -30,19 +30,15 @@ var _underscore = require('underscore');
 
 var _underscore2 = _interopRequireDefault(_underscore);
 
-var _s3Store = require('./s3Store');
-
 var _debug = require('debug');
 
 var _debug2 = _interopRequireDefault(_debug);
 
+var _s3Store = require('./s3Store');
+
 var _fs = require('fs');
 
 var _fs2 = _interopRequireDefault(_fs);
-
-var _awsSdk = require('aws-sdk');
-
-var _awsSdk2 = _interopRequireDefault(_awsSdk);
 
 var _output = require('./output');
 
@@ -54,12 +50,12 @@ var _configVerifier2 = _interopRequireDefault(_configVerifier);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var fs = _fs2.default;
+var rawS3 = _s3Store.realRawS3;
 
 // Injectable dependencies
 
 
-var AWS = _awsSdk2.default;
+var fs = _fs2.default;
 
 var output = _output2.default;
 
@@ -78,7 +74,7 @@ function _copyFile(bucket, filePath) {
 
     return new _bluebird2.default(function (resolve, reject) {
         output('Copying "' + filePath + '" to "' + bucket + '/' + filePath + '"');
-        var upload = _s3Store.rawS3.upload({
+        var upload = rawS3.upload({
             Bucket: bucket,
             Key: filePath,
             Body: fileStream
@@ -119,8 +115,8 @@ function inject() {
     var toInject = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
     fs = toInject.fs || fs;
-    AWS = toInject.AWS || AWS;
     output = toInject.output || output;
     verifier = toInject.verifier || verifier;
+    rawS3 = toInject.rawS3 || rawS3;
 }
 exports.inject = inject;

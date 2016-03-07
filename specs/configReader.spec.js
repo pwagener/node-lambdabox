@@ -96,10 +96,8 @@ describe('The configReader module', () => {
             expect(getArgs(findParentDir)[1]).to.equal('lambdabox.json');
         });
 
-        it('starts the search at the configReader directory', () => {
-            const mochaPath = require.resolve('mocha');
-            const mochaBinDir = path.dirname(mochaPath) + '/bin';
-            expect(getArgs(findParentDir)[0]).to.equal(mochaBinDir);
+        it('starts the search at the CWD', () => {
+            expect(getArgs(findParentDir)[0]).to.equal(process.cwd());
         });
 
         it('loads JSON from the found directory', () => {
