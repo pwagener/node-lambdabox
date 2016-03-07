@@ -10,8 +10,8 @@ import _ from 'underscore';
 import debug from 'debug';
 
 // Injectable dependencies
-import { realRawS3 } from './s3Store';
-let rawS3 = realRawS3;
+import s3Store from './s3Store';
+let localS3Store = s3Store;
 
 import realFs from 'fs';
 let fs = realFs;
@@ -35,7 +35,7 @@ function _copyFile(bucket, filePath) {
 
     return new Promise((resolve, reject) => {
         output('Copying "' + filePath + '" to "' + bucket + '/' + filePath + '"');
-        var upload = rawS3.upload({
+        var upload = localS3Store.upload({
             Bucket: bucket,
             Key: filePath,
             Body: fileStream
@@ -86,6 +86,6 @@ function inject(toInject = {}) {
     fs = toInject.fs || fs;
     output = toInject.output || output;
     verifier = toInject.verifier || verifier;
-    rawS3 = toInject.rawS3 || rawS3;
+    localS3Store = toInject.localS3Store || localS3Store;
 }
 export { inject };

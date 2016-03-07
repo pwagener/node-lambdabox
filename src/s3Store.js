@@ -10,5 +10,3 @@ var rawS3 = new AWS.S3({
     apiVersion: '2006-03-01'
 });
 export default Promise.promisifyAll(rawS3);
-
-export { rawS3 };

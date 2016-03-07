@@ -36,6 +36,8 @@ var _debug2 = _interopRequireDefault(_debug);
 
 var _s3Store = require('./s3Store');
 
+var _s3Store2 = _interopRequireDefault(_s3Store);
+
 var _fs = require('fs');
 
 var _fs2 = _interopRequireDefault(_fs);
@@ -50,7 +52,7 @@ var _configVerifier2 = _interopRequireDefault(_configVerifier);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var rawS3 = _s3Store.realRawS3;
+var localS3Store = _s3Store2.default;
 
 // Injectable dependencies
 
@@ -74,7 +76,7 @@ function _copyFile(bucket, filePath) {
 
     return new _bluebird2.default(function (resolve, reject) {
         output('Copying "' + filePath + '" to "' + bucket + '/' + filePath + '"');
-        var upload = rawS3.upload({
+        var upload = localS3Store.upload({
             Bucket: bucket,
             Key: filePath,
             Body: fileStream
@@ -117,6 +119,6 @@ function inject() {
     fs = toInject.fs || fs;
     output = toInject.output || output;
     verifier = toInject.verifier || verifier;
-    rawS3 = toInject.rawS3 || rawS3;
+    localS3Store = toInject.localS3Store || localS3Store;
 }
 exports.inject = inject;

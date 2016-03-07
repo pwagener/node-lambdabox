@@ -7,7 +7,6 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.rawS3 = undefined;
 
 var _awsSdk = require('aws-sdk');
 
@@ -23,4 +22,3 @@ var rawS3 = new _awsSdk2.default.S3({
   apiVersion: '2006-03-01'
 });
 exports.default = _bluebird2.default.promisifyAll(rawS3);
-exports.rawS3 = rawS3;

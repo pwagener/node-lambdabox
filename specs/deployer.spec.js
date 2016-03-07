@@ -25,7 +25,7 @@ describe('The deployer module', () => {
     });
 
     describe('when called', () => {
-        var validConfig, verifier, fs, rawS3, onSpy, sendSpy;
+        var validConfig, verifier, fs, localS3Store, onSpy, sendSpy;
 
         beforeEach(() => {
             verifier = sandbox.stub().returns(Promise.resolve());
@@ -35,7 +35,7 @@ describe('The deployer module', () => {
 
             // Mock out raw AWS S3 interface
             onSpy = sandbox.stub();
-            rawS3 = {
+            localS3Store = {
                 upload: sandbox.stub().returns({
                     on: onSpy
                 }).callsArg(1)
@@ -44,7 +44,7 @@ describe('The deployer module', () => {
             inject({
                 fs,
                 verifier: verifier,
-                rawS3: rawS3,
+                localS3Store: localS3Store,
                 output: sandbox.spy()
             });
 
@@ -57,11 +57,11 @@ describe('The deployer module', () => {
         });
 
         it('creates two ManagedUpload objects', () => {
-            expect(rawS3.upload).to.have.been.calledTwice;
+            expect(localS3Store.upload).to.have.been.calledTwice;
         });
 
         it('provides the correct S3 params', () => {
-            var args = getArgs(rawS3.upload)[0];
+            var args = getArgs(localS3Store.upload)[0];
 
             expect(args).to.have.property('Bucket', testConfig.s3Bucket);
             expect(args).to.have.property('Key', testConfig.files[0].path);

@@ -2,7 +2,7 @@
 
 This project follows semantic versioning.  Each release will document changes here.
 
-## 1.1.1:
+## 1.1.2:
 
 - Fixed bug in finding `lambdabox.json` file
 
