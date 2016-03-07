@@ -7,15 +7,14 @@
 import Promise from 'bluebird';
 import path from 'path';
 import _ from 'underscore';
-import { rawS3 } from './s3Store';
 import debug from 'debug';
 
 // Injectable dependencies
+import { realRawS3 } from './s3Store';
+let rawS3 = realRawS3;
+
 import realFs from 'fs';
 let fs = realFs;
-
-import realAws from 'aws-sdk';
-let AWS = realAws;
 
 import realOutput from './output';
 let output = realOutput;
@@ -85,8 +84,8 @@ export default function (config) {
 /* istanbul ignore next */
 function inject(toInject = {}) {
     fs = toInject.fs || fs;
-    AWS = toInject.AWS || AWS;
     output = toInject.output || output;
     verifier = toInject.verifier || verifier;
+    rawS3 = toInject.rawS3 || rawS3;
 }
 export { inject };

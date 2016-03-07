@@ -24,7 +24,7 @@ function _findConfig(configPath) {
         output('Finding config with explicit path: ' + configPath);
         return Promise.resolve(path.resolve(configPath));
     } else {
-        const startDir = path.dirname(require.main.filename);
+        const startDir = process.cwd();
         output('Searching for ' + defaultConfigFileName + ' starting at ' + startDir);
         return findParentDir(startDir, defaultConfigFileName)
             .then(foundDir => {
