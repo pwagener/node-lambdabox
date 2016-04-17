@@ -2,6 +2,12 @@
 
 This project follows semantic versioning.  Each release will document changes here.
 
+## 2.0.0
+Breaking Change:
+- When calling `attach()`, replaced the `config` option with `configPath`
+to specify the path to the Lambdabox configuration file.  The `config` options
+is now used to directly provide the config object.
+
 ## 1.1.2:
 
 - Fixed bug in finding `lambdabox.json` file

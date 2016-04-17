@@ -153,19 +153,43 @@ never rejected.  If the copy fails (for instance, the file does not exist in
 S3), Lambdabox will retry again after a delay.  This is to ensure future calls
 to the _handler(...)_ do not proceed without having the files available.
 
-Also, different Lambda's may not need all files.  You may specify the files
-needed as well:
+
+### lambdabox.attach(...) options
+
+#### Specifying Files
+Different Lambda's may not need all files.  You may specify the files
+needed by the particular lambda in the `attach` call with the `files` option:
 
 ```
     // ...
-    var attachPromise = lambdabox.attach([
-        "data/someBigFile.csv",
-        "data/anotherBigFile.csv"
-    ]);
-    }
+    var attachPromise = lambdabox.attach({
+        files: [
+            "data/someBigFile.csv",
+            "data/anotherBigFile.csv"
+        ]
+    });
 ```
 This call to `attach(...)` would not copy the PhantomJS executable from the
 configuration file.
+
+### Working With Bundlers
+When using `webpack` or `browserify` to package your Lambda, it may be
+troublesome to have an external `lambabox.json` file lying around not specified
+as part of the dependency tree.  In your handler you can explicitly
+load the configuration file via `require(...)`, and then provide it directly to
+the `attach(...)` call with the `config` option.  For instance:
+
+```
+// Use Lambdabox to ensure we have PhantomJS
+var lambdabox = require('lambdabox');
+var lambdaboxConfig = require('./lambdabox.json');
+var attachPromise = lambdabox.attach({
+    config: lambdaboxConfig
+});
+```
+This would allow a bundler like `webpack` to package the configuration inside
+of the built file.  That configuration would then be provided directly to
+`lambdabox`.
 
 # Changelog
 

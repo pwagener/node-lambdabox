@@ -49,7 +49,7 @@ describe('The configReader module', () => {
         beforeEach(() => {
             initStubs();
             promise = configReader({
-                config: otherConfigPath,
+                configPath: otherConfigPath,
                 files: [
                     'specs/testBinaryOne.sh'
                 ]

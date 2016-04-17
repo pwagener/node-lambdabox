@@ -13,14 +13,24 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 exports.default = function () {
     var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
-    return _findConfig(options.config).then(function (configPath) {
-        output('Loading configuration from "' + configPath + '"');
+    var config = options.config;
 
-        var config = jsonLoader(configPath);
+    var configPromise;
+    if (config) {
+        output('Using explicit config: ' + config.name);
+        configPromise = _bluebird2.default.resolve(config);
+    } else {
+        // find the config by an explicit JSON path or by walking parent dirs
+        configPromise = _findConfig(options).then(function (configPath) {
+            output('Loading configuration from "' + configPath + '"');
+
+            return jsonLoader(configPath);
+        });
+    }
+
+    return configPromise.then(function (config) {
         _organizeFiles(config, options);
-
         config.attachRetryDelay = config.attachRetryDelay || 1000;
-
         return config;
     });
 };
@@ -65,7 +75,9 @@ var jsonLoader = _jsonLoader2.default;
 
 var defaultConfigFileName = 'lambdabox.json';
 
-function _findConfig(configPath) {
+function _findConfig(options) {
+    var configPath = options.configPath;
+
     if (configPath) {
         output('Finding config with explicit path: ' + configPath);
         return _bluebird2.default.resolve(_path2.default.resolve(configPath));
@@ -118,7 +130,8 @@ function _organizeFiles(config) {
  * resolves to an object representing the config.
  * @param options Options.  May include:
  *   - files The array of files to be concerned with
- *   - config The path to the configuration file
+ *   - config The configuration object to use
+ *   - configPath The path to the configuration file
  * @returns {Promise.<T>}
  */
 

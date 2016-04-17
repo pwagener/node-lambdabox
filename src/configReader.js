@@ -19,7 +19,9 @@ var jsonLoader = realJsonLoader;
 
 const defaultConfigFileName = 'lambdabox.json';
 
-function _findConfig(configPath) {
+function _findConfig(options) {
+    var configPath = options.configPath;
+
     if (configPath) {
         output('Finding config with explicit path: ' + configPath);
         return Promise.resolve(path.resolve(configPath));
@@ -71,21 +73,32 @@ function _organizeFiles(config, options = {}) {
  * resolves to an object representing the config.
  * @param options Options.  May include:
  *   - files The array of files to be concerned with
- *   - config The path to the configuration file
+ *   - config The configuration object to use
+ *   - configPath The path to the configuration file
  * @returns {Promise.<T>}
  */
 export default function(options = {}) {
-    return _findConfig(options.config)
-        .then(configPath => {
-            output('Loading configuration from "' + configPath + '"');
+    var config = options.config;
 
-            var config = jsonLoader(configPath);
-            _organizeFiles(config, options);
+    var configPromise;
+    if (config) {
+        output('Using explicit config: ' + config.name);
+        configPromise = Promise.resolve(config);
+    } else {
+        // find the config by an explicit JSON path or by walking parent dirs
+        configPromise =  _findConfig(options)
+            .then(configPath => {
+                output('Loading configuration from "' + configPath + '"');
 
-            config.attachRetryDelay = config.attachRetryDelay || 1000
+                return jsonLoader(configPath);
+            });
+    }
 
-            return config;
-        });
+    return configPromise.then(function(config) {
+        _organizeFiles(config, options);
+        config.attachRetryDelay = config.attachRetryDelay || 1000
+        return config;
+    });
 }
 
 /**
